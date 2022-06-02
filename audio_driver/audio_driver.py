@@ -15,7 +15,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import asyncio
 from collections import deque
 import os
 import signal
@@ -104,25 +103,19 @@ class AudioTemporaryStore():
 
 class AudioDriver(Node):
 
-    async def wait_with_delay(self, delay_sec):
-        await asyncio.sleep(delay_sec)
-
     def recovery_with_retry(self):
         start_time = time.time()
         
         # The time of delay should be set to guarantee 2 times
         # the time it takes to execute the command.
         subprocess.run(['pulseaudio', '-k'])
-        asyncio.set_event_loop(self._loop)
-        self._loop.run_until_complete(
-            self.wait_with_delay(0.02))
+        time.sleep(0.02)
 
         while(True):
             if time.time() - start_time > self._recovery_timeout_sec:
                 raise TimeoutError
             code = subprocess.run(['pulseaudio', '--check'])
-            self._loop.run_until_complete(
-                self.wait_with_delay(0.05))
+            time.sleep(0.05)
             if (code.returncode != 0):
                 continue
             self.play()
@@ -214,23 +207,19 @@ class AudioDriver(Node):
                         if self._current_audio.loop_delay != 0:
                             # Wait the next playback
                             #   for the time set in "Loop Delay".
-                            asyncio.set_event_loop(self._loop)
+                            time.sleep(self._current_audio.loop_delay)
 
-                            # [Remaining issue] Asynchronization using "asyncio" 
-                            #   is assumed, but it is not asynchronous processing.
-                            #   The current implementation is equivalent to 
-                            #   the implementation using "sleep".
-                            self._loop.run_until_complete(
-                                self.wait_with_delay(self._current_audio.loop_delay))
                         self.gst_play()
 
             self._lock.release()
         elif msg.type == Gst.MessageType.ERROR:
+            self._lock.acquire()
             logger.error("[audio driver] bus_call Gst.MessageType.ERROR")
             try:
                 self.recovery_with_retry()
             except TimeoutError:
                 logger.error("[audio driver] failed recovery")
+            self._lock.release()
 
         if msg.type not in white_data_list:
             logger.info("[audio_driver] msg.type : {}".format(msg.type))
@@ -269,7 +258,6 @@ class AudioDriver(Node):
         self._bus = self._playbin.get_bus()
         self._current_audio = AudioTemporaryStore()
         self._audio_info_stock = deque()
-        self._loop = asyncio.new_event_loop()
         self._lock = threading.Lock()
         self._bus.add_watch(0, self.bus_call)
 
@@ -307,14 +295,7 @@ class AudioDriver(Node):
         if self._current_audio.start_delay >= 0.01:
             logger.info("[play] start delay {}".format(
                 self._current_audio.start_delay))
-            asyncio.set_event_loop(self._loop)
-
-            # [Remaining issue] Asynchronization using "asyncio"
-            #   is assumed, but it is not asynchronous processing.
-            #   The current implementation is equivalent to
-            #   the implementation using "sleep".
-            self._loop.run_until_complete(
-                self.wait_with_delay(self._current_audio.start_delay))
+            time.sleep(self._current_audio.start_delay)
         self.gst_play()
 
     def gst_play(self):
@@ -357,7 +338,6 @@ class AudioDriver(Node):
         self._current_audio = None
         if len(self._audio_info_stock) >= 1:
             self._audio_info_stock.clear()
-        self._loop.close()
         self._gst_thread_loop.quit()
 
     def __del__(self):
