@@ -15,7 +15,7 @@ The [GStreamer](https://gstreamer.freedesktop.org/) library is used for audio pl
 ## Node Graph
 ![node graph](http://www.plantuml.com/plantuml/proxy?src=https://raw.githubusercontent.com/eve-autonomy/audio_driver/docs/node_graph.pu)
 
-## Parameter discription
+## Parameter description
 <table>
   <thead>
     <tr>
