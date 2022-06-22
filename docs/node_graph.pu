@@ -1,0 +1,11 @@
+@startuml
+
+usecase "/ad_sound_manager"
+usecase "/sound_bgm/audio_driver" #LightCoral
+usecase "/sound_voice_alarm/audio_driver" #LightCoral
+
+(/ad_sound_manager) -> (/sound_voice_alarm/audio_driver) : /sound_voice_alarm/audio_cmd
+(/ad_sound_manager) <- (/sound_voice_alarm/audio_driver) : /sound_voice_alarm/audio_res
+(/ad_sound_manager) --> (/sound_bgm/audio_driver) : /sound_bgm/audio_cmd
+
+@enduml
