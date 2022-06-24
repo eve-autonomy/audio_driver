@@ -13,7 +13,7 @@ The [GStreamer](https://gstreamer.freedesktop.org/) library is used for audio pl
     - `audio_res` : Notification that audio playback is complete.
 
 ## Node Graph
-![node graph](http://www.plantuml.com/plantuml/proxy?src=https://raw.githubusercontent.com/eve-autonomy/audio_driver/docs/node_graph.pu)
+![node graph](http://www.plantuml.com/plantuml/proxy?src=https://raw.githubusercontent.com/eve-autonomy/audio_driver/main/docs/node_graph.pu)
 
 ## Parameter description
 <table>
